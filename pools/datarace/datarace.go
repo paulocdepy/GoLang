@@ -12,6 +12,7 @@ func MainDataRace() {
 	contador := 0
 
 	var wg sync.WaitGroup
+	var mu sync.Mutex
 
 	wg.Add(totalGoroutines)
 
@@ -20,7 +21,12 @@ func MainDataRace() {
 			defer wg.Done()
 
 			for j := 0; j < incrementos; j++ {
+
+				mu.Lock()
+
 				contador++
+
+				mu.Unlock()
 			}
 		}()
 	}
