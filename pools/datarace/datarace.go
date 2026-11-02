@@ -3,54 +3,75 @@ package datarace
 import (
 	"fmt"
 	"sync"
-	"time"
 )
 
+func registrarJob(
+	mu *sync.Mutex,
+	total *int,
+	workerID int,
+	job int,
+) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	(*total)++
+
+	fmt.Printf(
+		"Worker %d registrou Job %d. Total: %d\n",
+		workerID,
+		job,
+		*total,
+	)
+}
+
+func worker(
+	id int,
+	jobs <-chan int,
+	mu *sync.Mutex,
+	total *int,
+	wg *sync.WaitGroup,
+) {
+	defer wg.Done()
+
+	for job := range jobs {
+		registrarJob(mu, total, id, job)
+	}
+
+	fmt.Printf("Worker %d terminou.\n", id)
+}
+
 func MainDataRace() {
+	const totalJobs = 10
+	const totalWorkers = 3
+
+	jobs := make(chan int)
+
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
-	tentou := make(chan struct{})
+	totalProcessados := 0
 
-	// MAIN adquire o Mutex.
-	mu.Lock()
+	wg.Add(totalWorkers)
 
-	fmt.Println("MAIN: adquiriu o Mutex.")
+	for id := 1; id <= totalWorkers; id++ {
+		go worker(
+			id,
+			jobs,
+			&mu,
+			&totalProcessados,
+			&wg,
+		)
+	}
 
-	wg.Add(1)
+	for job := 1; job <= totalJobs; job++ {
+		jobs <- job
+	}
 
-	go func() {
-		defer wg.Done()
-
-		fmt.Println("Worker: tentando adquirir o Mutex...")
-
-		// Avisa ao MAIN que está prestes a tentar.
-		close(tentou)
-
-		// Aqui ficará bloqueada enquanto MAIN
-		// mantiver o Mutex ocupado.
-		mu.Lock()
-		defer mu.Unlock()
-
-		fmt.Println("Worker: conseguiu adquirir o Mutex!")
-
-		time.Sleep(500 * time.Millisecond)
-
-		fmt.Println("Worker: terminou e liberou o Mutex.")
-	}()
-
-	// Espera o Worker anunciar sua tentativa.
-	<-tentou
-
-	fmt.Println("MAIN: mantendo o Mutex bloqueado por 2 segundos.")
-
-	time.Sleep(2 * time.Second)
-
-	fmt.Println("MAIN: liberando o Mutex.")
-
-	mu.Unlock()
+	close(jobs)
 
 	wg.Wait()
 
-	fmt.Println("MAIN: todas as goroutines terminaram.")
+	fmt.Println("---------------------------")
+	fmt.Println("Total esperado:", totalJobs)
+	fmt.Println("Total obtido:  ", totalProcessados)
 }
