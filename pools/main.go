@@ -32,7 +32,4 @@ func main() {
 
 	fmt.Println("- ...Data Race Study.....")
 	datarace.MainDataRace()
-
-	fmt.Println("- ...Data Race Study.....")
-	datarace.MainDataRace()
 }

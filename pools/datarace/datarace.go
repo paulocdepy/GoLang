@@ -3,36 +3,54 @@ package datarace
 import (
 	"fmt"
 	"sync"
+	"time"
 )
 
 func MainDataRace() {
-	const totalGoroutines = 100
-	const incrementos = 10000
-
-	contador := 0
-
-	var wg sync.WaitGroup
 	var mu sync.Mutex
+	var wg sync.WaitGroup
 
-	wg.Add(totalGoroutines)
+	tentou := make(chan struct{})
 
-	for i := 0; i < totalGoroutines; i++ {
-		go func() {
-			defer wg.Done()
+	// MAIN adquire o Mutex.
+	mu.Lock()
 
-			for j := 0; j < incrementos; j++ {
+	fmt.Println("MAIN: adquiriu o Mutex.")
 
-				mu.Lock()
+	wg.Add(1)
 
-				contador++
+	go func() {
+		defer wg.Done()
 
-				mu.Unlock()
-			}
-		}()
-	}
+		fmt.Println("Worker: tentando adquirir o Mutex...")
+
+		// Avisa ao MAIN que está prestes a tentar.
+		close(tentou)
+
+		// Aqui ficará bloqueada enquanto MAIN
+		// mantiver o Mutex ocupado.
+		mu.Lock()
+		defer mu.Unlock()
+
+		fmt.Println("Worker: conseguiu adquirir o Mutex!")
+
+		time.Sleep(500 * time.Millisecond)
+
+		fmt.Println("Worker: terminou e liberou o Mutex.")
+	}()
+
+	// Espera o Worker anunciar sua tentativa.
+	<-tentou
+
+	fmt.Println("MAIN: mantendo o Mutex bloqueado por 2 segundos.")
+
+	time.Sleep(2 * time.Second)
+
+	fmt.Println("MAIN: liberando o Mutex.")
+
+	mu.Unlock()
 
 	wg.Wait()
 
-	fmt.Println("Resultado esperado:", totalGoroutines*incrementos)
-	fmt.Println("Resultado obtido:  ", contador)
+	fmt.Println("MAIN: todas as goroutines terminaram.")
 }
