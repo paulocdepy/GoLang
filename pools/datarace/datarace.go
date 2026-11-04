@@ -49,7 +49,7 @@ func MainDataRace() {
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
-	totalProcessados := 0
+	total := 0
 
 	wg.Add(totalWorkers)
 
@@ -58,7 +58,7 @@ func MainDataRace() {
 			id,
 			jobs,
 			&mu,
-			&totalProcessados,
+			&total,
 			&wg,
 		)
 	}
@@ -73,5 +73,5 @@ func MainDataRace() {
 
 	fmt.Println("---------------------------")
 	fmt.Println("Total esperado:", totalJobs)
-	fmt.Println("Total obtido:  ", totalProcessados)
+	fmt.Println("Total obtido:  ", total)
 }
