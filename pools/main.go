@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"pools/datarace"
+	rwmutext "pools/rwmutex"
 )
 
 func main() {
@@ -30,6 +30,9 @@ func main() {
 	//fmt.Println("- ...-Context Jobs Complete .....")
 	//ctxjobcomp.CtxJobsMain()
 
-	fmt.Println("- ...Data Race Study.....")
-	datarace.MainDataRace()
+	//fmt.Println("- ...Data Race Study.....")
+	//datarace.MainDataRace()
+
+	fmt.Println("- ...Data Race RwMutext.....")
+	rwmutext.MainRwMutex()
 }

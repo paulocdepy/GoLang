@@ -1,4 +1,4 @@
-package main
+package rwmutext
 
 import (
 	"fmt"
@@ -55,7 +55,7 @@ func (c *Catalogo) atualizar(
 	fmt.Println("Escritor: produto atualizado.")
 }
 
-func main() {
+func MainRwMutex() {
 	catalogo := Catalogo{
 		produtos: map[int]string{
 			1: "Notebook",
