@@ -56,6 +56,7 @@ func (c *Catalogo) atualizar(
 }
 
 func MainRwMutex() {
+	// mocando dados pra catalogo..
 	catalogo := Catalogo{
 		produtos: map[int]string{
 			1: "Notebook",
@@ -64,6 +65,7 @@ func MainRwMutex() {
 
 	var wg sync.WaitGroup
 
+	// cria os canais prontos foi criado com burrer 2.. pra não ficar dependente de ter que apertem sua mão :-)
 	prontos := make(chan struct{}, 2)
 	liberar := make(chan struct{})
 	tentando := make(chan struct{})
